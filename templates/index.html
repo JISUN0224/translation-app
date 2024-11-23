@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 번역기</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .text-area {
+            display: flex;
+            gap: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        select, button {
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #error {
+            color: red;
+            display: none;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            color: #007bff;
+        }
+        .info {
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI 번역기</h1>
+        <p class="info">
+            원하는 텍스트의 종류를 선택해주세요.<br>
+            <strong>일상대화</strong>: 자연스러운 구어체 스타일<br>
+            <strong>기사</strong>: 객관적, 정확하며 명확한 번역. 감정적 표현 자제. 인명, 지명은 음역.<br>
+            <strong>법률</strong>: 공식적이고 정중한 어투. 정확한 번역과 통일된 어휘 사용.<br>
+            <strong>문학</strong>: 작가의 의도, 등장인물의 성격, 배경 설정 등을 고려한 번역. 비유, 은유, 상징 등 문학적 표현.<br>
+            번역 결과에 추가적인 요청 사항이 있다면 하단의 '추가 요청'에 요청 사항을 써주세요.<br>
+            <em>해당 번역은 Google Gemini에 기반한 결과로 매번 결과물이 다를 수도 있으며, 100% 정확한 것은 아니니 사용자의 추가 검토가 필요합니다.</em>
+        </p>
+        
+        <label for="sourceLanguage">출발 언어</label>
+        <select id="sourceLanguage">
+            <option value="중국어">중국어</option>
+            <option value="한국어">한국어</option>
+            <option value="영어">영어</option>
+        </select>
+        
+        <label for="targetLanguage">도착 언어</label>
+        <select id="targetLanguage">
+            <option value="중국어">중국어</option>
+            <option value="한국어">한국어</option>
+            <option value="영어">영어</option>
+        </select>
+
+        <label for="textType">텍스트 유형</label>
+        <select id="textType">
+            <option value="daily">일상 대화</option>
+            <option value="article">기사</option>
+            <option value="legal">법률</option>
+            <option value="literature">문학</option>
+        </select>
+        
+        <label for="targetAudience">대상 독자</label>
+        <select id="targetAudience">
+            <option value="어린아이">어린아이</option>
+            <option value="청소년">청소년</option>
+            <option value="성인">성인</option>
+            <option value="전문가">전문가</option>
+        </select>
+        
+        <div class="text-area">
+            <div style="flex: 1;">
+                <h3>원문</h3>
+                <textarea id="sourceText" placeholder="번역할 텍스트를 입력하세요"></textarea>
+            </div>
+            <div style="flex: 1;">
+                <h3>번역</h3>
+                <textarea id="translatedText" readonly></textarea>
+            </div>
+        </div>
+
+        <label for="additionalRequest">추가 요청</label>
+        <textarea id="additionalRequest" placeholder="추가 요청 사항을 입력하세요"></textarea>
+
+        <button id="translateBtn">번역하기</button>
+        <p id="loading">번역 중...</p>
+        <p id="error"></p>
+    </div>
+
+    <script>
+        document.getElementById('translateBtn').addEventListener('click', async function() {
+            const sourceText = document.getElementById('sourceText').value;
+            const textType = document.getElementById('textType').value;
+            const sourceLanguage = document.getElementById('sourceLanguage').value;
+            const targetLanguage = document.getElementById('targetLanguage').value;
+            const targetAudience = document.getElementById('targetAudience').value;
+            const additionalRequest = document.getElementById('additionalRequest').value.trim();
+            const translatedText = document.getElementById('translatedText');
+            const error = document.getElementById('error');
+            const loading = document.getElementById('loading');
+
+            if (!sourceText || !textType) {
+                error.style.display = 'block';
+                error.textContent = '모든 필드를 입력해주세요';
+                return;
+            }
+
+            try {
+                error.style.display = 'none';
+                loading.style.display = 'block';
+                translatedText.value = '';
+
+                const response = await fetch('/translate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: sourceText,
+                        type: textType,
+                        source_language: sourceLanguage,
+                        target_language: targetLanguage,
+                        target_audience: targetAudience,
+                        additional_request: additionalRequest
+                    })
+                });
+
+                const data = await response.json();
+                if (data.error) throw new Error(data.error);
+                translatedText.value = data.translation;
+            } catch (err) {
+                error.style.display = 'block';
+                error.textContent = '번역 중 오류가 발생했습니다: ' + err.message;
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
