@@ -3,170 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI 번역기</title>
+    <title>맞춤형 AI 번역기</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
+        .info {
+            font-size: 11px;
+            color: #888;
+        }
+
         .container {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
+
+       .language-select {
+   	 display: flex;
+   	 gap: 200px;
+   	 margin-top: 20px;
+	}
+
+    .language-select select {
+   	 width: 250px;
+    	padding: 10px;
+    	border-radius: 4px;
+    	border: 1px solid #ccc;
+	}
+
+    .char-count {
+        text-align: right;
+        color: #888;
+        margin-top: 5px;
+    }
+
+    .category {
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+
+        .category, .audience, .custom-request {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .category-item, .audience-item, .request-item {
+            margin-left: 20px;
+            list-style: none;
+        }
+
+        .category-item::before, .audience-item::before, .request-item::before {
+            content: "•";
+            color: black;
+            margin-right: 8px;
+        }
+
+        .category + select,
+        .audience + select {
+            margin-top: 10px;
+            width: 400px;
+	    height: 40px;
+        }
+
+        h1 {
+            font-size: 24px;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        h1 .emoji {
+            font-size: 24px;
+        }
+
         .text-area {
             display: flex;
             gap: 20px;
         }
-        textarea {
-            width: 100%;
-            height: 200px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+
+        .text-area > div {
+            flex: 1;
         }
-        select, button {
+
+        .text-area textarea {
+            width: calc(100% - 40px);
+            height: 300px;
             padding: 10px;
             border-radius: 4px;
             border: 1px solid #ccc;
+            resize: vertical;
         }
-        button {
-            background-color: #007bff;
-            color: white;
+
+        #copyButton {
+            background: none;
             border: none;
+            padding: 0;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #0056b3;
+
+        #copyButton img {
+            width: 24px;
+            height: 24px;
         }
-        #error {
-            color: red;
-            display: none;
+
+        #translateBtn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
+
         #loading {
             display: none;
-            text-align: center;
-            color: #007bff;
+            margin-top: 10px;
+            color: #333;
         }
-        .info {
-            font-size: 0.9rem;
-            color: #555;
-            line-height: 1.5;
+
+        #customRequestBox {
+            width: calc(100% - 20px);
+            height: 100px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            resize: vertical;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>AI 번역기</h1>
-        <p class="info">
-            원하는 텍스트의 종류를 선택해주세요.<br>
-            <strong>일상대화</strong>: 자연스러운 구어체 스타일<br>
-            <strong>기사</strong>: 객관적, 정확하며 명확한 번역. 감정적 표현 자제. 인명, 지명은 음역.<br>
-            <strong>법률</strong>: 공식적이고 정중한 어투. 정확한 번역과 통일된 어휘 사용.<br>
-            <strong>문학</strong>: 작가의 의도, 등장인물의 성격, 배경 설정 등을 고려한 번역. 비유, 은유, 상징 등 문학적 표현.<br>
-            번역 결과에 추가적인 요청 사항이 있다면 하단의 '추가 요청'에 요청 사항을 써주세요.<br>
-            <em>해당 번역은 Google Gemini에 기반한 결과로 매번 결과물이 다를 수도 있으며, 100% 정확한 것은 아니니 사용자의 추가 검토가 필요합니다.</em>
-        </p>
-        
-        <label for="sourceLanguage">출발 언어</label>
-        <select id="sourceLanguage">
-            <option value="중국어">중국어</option>
-            <option value="한국어">한국어</option>
-            <option value="영어">영어</option>
-        </select>
-        
-        <label for="targetLanguage">도착 언어</label>
-        <select id="targetLanguage">
-            <option value="중국어">중국어</option>
-            <option value="한국어">한국어</option>
-            <option value="영어">영어</option>
-        </select>
+        <h1>
+            <span class="emoji">🌸</span> AI 번역기 <span class="emoji">🌸</span>
+        </h1>
 
-        <label for="textType">텍스트 유형</label>
-        <select id="textType">
-            <option value="daily">일상 대화</option>
-            <option value="article">기사</option>
-            <option value="legal">법률</option>
-            <option value="literature">문학</option>
-        </select>
-        
-        <label for="targetAudience">대상 독자</label>
-        <select id="targetAudience">
-            <option value="어린아이">어린아이</option>
-            <option value="청소년">청소년</option>
-            <option value="성인">성인</option>
-            <option value="전문가">전문가</option>
-        </select>
-        
+        <p class="info">
+            <em>해당 번역은 Google Gemini에 기반한 결과로 매번 결과물이 다를 수도 있으며, 100% 정확한 것은 아니니 사용자의 추가 검토가 필요합니다.</em><br>
+            <em>웹 접속 후 첫 번역은 서버의 응답 시간이 지연되어 다소 시간이 걸릴 수 있습니다.</em>
+        </p>
+
+   	<div>
+   	 <label for="sourceLanguage" class="category">언어를 선택해주세요:</label>
+    	<div class="language-select">
+        <div>
+            <label for="sourceLanguage">출발 언어</label>
+            <select id="sourceLanguage">
+                <option value="중국어">중국어</option>
+                <option value="한국어">한국어</option>
+                <option value="영어">영어</option>
+            </select>
+        </div>
+        <div>
+            <label for="targetLanguage">도착 언어</label>
+            <select id="targetLanguage">
+                <option value="중국어">중국어</option>
+                <option value="한국어">한국어</option>
+                <option value="영어">영어</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+
+        <div>
+            <label for="textType" class="category">텍스트의 종류를 선택해주세요:</label>
+            <select id="textType">
+                <option value="daily">일상 대화</option>
+                <option value="article">기사</option>
+                <option value="legal">법률</option>
+                <option value="literature">문학</option>
+            </select>
+            <ul>
+                <li class="category-item">일상대화: 자연스러운 구어체 스타일</li>
+                <li class="category-item">기사: 객관적, 정확하며 명확한 번역. 감정적 표현 자제. 인명, 지명은 음역.</li>
+                <li class="category-item">법률: 공식적이고 정중한 어투. 정확한 번역과 통일된 어휘 사용.</li>
+                <li class="category-item">문학: 작가의 의도, 등장인물의 성격, 배경 설정 등을 고려한 번역. 비유, 은유, 상징 등 문학적 표현.</li>
+            </ul>
+        </div>
+
+        <div>
+            <label for="targetAudience" class="audience">대상 독자를 선택해주세요:</label>
+            <select id="targetAudience">
+                <option value="어린아이">어린아이</option>
+                <option value="청소년">청소년</option>
+                <option value="성인">성인</option>
+                <option value="전문가">전문가</option>
+            </select>
+            <ul>
+                <li class="audience-item">어린아이: 최대한 쉬운 어휘로, 친절하게 말하고, 문장을 짧게 끊어서 번역합니다.</li>
+                <li class="audience-item">청소년: 청소년이 이해할 수 있도록 친근한 어휘와 문체로 번역합니다.</li>
+                <li class="audience-item">성인: 자연스럽고, 정확하고 명료한 말투를 사용하고 기본적으로 평서체를 (~다, ~한다)를 사용할 것</li>
+                <li class="audience-item">전문가: 전문적인 용어와 표현을 정확하게 사용하고, 학술적 또는 전문적 맥락을 충실히 반영합니다.</li>
+            </ul>
+        </div>
+
+        <div>
+            <label for="customRequestBox" class="custom-request">맞춤 요청(선택)</label>
+            <ul>
+                <li class="request-item">번역 결과가 이상적이지 않거나, 위의 선택 옵션 외에 요청이 있다면 하단의 예시를 참고하여 창에 입력해주세요.</li>
+                <li class="request-item">문장의 흐름을 짧게 자르지 말고, 길게 연결해주세요.</li>
+                <li class="request-item">'瓜'는 오이가 아닌 수박으로 번역해주세요.</li>
+                <li class="request-item">인물 관계는 아버지와 아들이며, 서로 관계가 좋지 않습니다. 이를 반영해주세요.</li>
+                <li class="request-item">엔화, 달러 등 외화는 그대로 번역한 뒤, 뒤에 괄호를 치고 한화로 기입해주세요.</li>
+            </ul>
+        </div>
+        <textarea id="customRequestBox" placeholder="맞춤 요청 사항을 입력하세요"></textarea>
+
         <div class="text-area">
-            <div style="flex: 1;">
+            <div>
                 <h3>원문</h3>
                 <textarea id="sourceText" placeholder="번역할 텍스트를 입력하세요"></textarea>
+                <div class="char-count">
+                    <span id="charCount">0 / 2000</span>
+                </div>
             </div>
-            <div style="flex: 1;">
+            <div>
                 <h3>번역</h3>
                 <textarea id="translatedText" readonly></textarea>
+                <button id="copyButton">
+                     <img src="/static/image/copy-icon.png" alt="복사하기" style="width: 20px; height: 20px;">
+                </button>
             </div>
         </div>
 
-        <label for="additionalRequest">추가 요청</label>
-        <textarea id="additionalRequest" placeholder="추가 요청 사항을 입력하세요"></textarea>
-
-        <button id="translateBtn">번역하기</button>
-        <p id="loading">번역 중...</p>
+        <div class="translate-button">
+            <button id="translateBtn">번역하기</button>
+            <p id="loading">번역 중...</p>
+        </div>
         <p id="error"></p>
     </div>
 
-    <script>
-        document.getElementById('translateBtn').addEventListener('click', async function() {
-            const sourceText = document.getElementById('sourceText').value;
-            const textType = document.getElementById('textType').value;
-            const sourceLanguage = document.getElementById('sourceLanguage').value;
-            const targetLanguage = document.getElementById('targetLanguage').value;
-            const targetAudience = document.getElementById('targetAudience').value;
-            const additionalRequest = document.getElementById('additionalRequest').value.trim();
-            const translatedText = document.getElementById('translatedText');
-            const error = document.getElementById('error');
-            const loading = document.getElementById('loading');
+<script>
+        const translateBtn = document.getElementById('translateBtn');
+        const sourceText = document.getElementById('sourceText');
+        const charCount = document.getElementById('charCount');
+        const maxChars = 2000;
 
-            if (!sourceText || !textType) {
-                error.style.display = 'block';
-                error.textContent = '모든 필드를 입력해주세요';
-                return;
+        // 글자수 제한
+        sourceText.addEventListener('input', () => {
+            const textLength = sourceText.value.length;
+            if (textLength > maxChars) {
+                sourceText.value = sourceText.value.slice(0, maxChars);
+                alert('최대 2,000자까지만 입력 가능합니다.');
             }
+            charCount.textContent = `${textLength} / ${maxChars}`;
+        });
+
+        // 번역 버튼
+        translateBtn.addEventListener('click', async () => {
+            const loading = document.getElementById('loading');
+            const errorElement = document.getElementById('error');
 
             try {
-                error.style.display = 'none';
                 loading.style.display = 'block';
-                translatedText.value = '';
+                errorElement.textContent = '';
 
                 const response = await fetch('/translate', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        text: sourceText,
-                        type: textType,
-                        source_language: sourceLanguage,
-                        target_language: targetLanguage,
-                        target_audience: targetAudience,
-                        additional_request: additionalRequest
+                        text: sourceText.value,
+                        type: document.getElementById('textType').value,
+                        target_language: document.getElementById('targetLanguage').value,
+                        source_language: document.getElementById('sourceLanguage').value,
+                        target_audience: document.getElementById('targetAudience').value,
+                        additional_request: document.getElementById('customRequestBox').value
                     })
                 });
 
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
                 if (data.error) throw new Error(data.error);
-                translatedText.value = data.translation;
-            } catch (err) {
-                error.style.display = 'block';
-                error.textContent = '번역 중 오류가 발생했습니다: ' + err.message;
+
+                document.getElementById('translatedText').value = data.translation;
+
+            } catch (error) {
+                errorElement.textContent = `번역 중 오류가 발생했습니다: ${error.message}`;
             } finally {
                 loading.style.display = 'none';
             }
         });
+
+       // 복사 버튼
+document.getElementById('copyButton').addEventListener('click', () => {
+    const translatedText = document.getElementById('translatedText');
+    if (!translatedText.value.trim()) {
+        alert('복사할 텍스트가 없습니다.');
+        return;
+    }
+
+    translatedText.select();
+    try {
+        const successful = document.execCommand('copy');
+        const msg = successful ? '텍스트가 복사되었습니다.' : '복사하기가 실패했습니다.';
+        alert(msg);
+    } catch (err) {
+        console.error('복사 실패:', err);
+        alert('복사하기가 실패했습니다.');
+    }
+});
     </script>
 </body>
 </html>
