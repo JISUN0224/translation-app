@@ -22,7 +22,7 @@ if not api_key:
 genai.configure(api_key=api_key)
 
 # Gemini 모델 초기화
-model = GenerativeModel('gemini-pro')
+model = GenerativeModel('models/gemini-2.0-flash')
 
 app = Flask(__name__, static_folder='static')
 
