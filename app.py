@@ -183,7 +183,7 @@ def translate():
         logger.debug(f"Generated prompt: {prompt}")
         
         # 타임아웃 처리 (30초)
-        generation_config = {"temperature": 0.5}
+        generation_config = {"temperature": 0.1}
         timeout = 30
         response = call_generate_content_with_timeout(prompt, generation_config, timeout)
         
